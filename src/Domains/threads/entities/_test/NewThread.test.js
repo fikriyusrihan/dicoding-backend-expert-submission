@@ -28,7 +28,7 @@ describe('a NewThread entity', () => {
   it('should throw error when title contains more than 255 characters', () => {
     // Arrange
     const payload = {
-      title: 'ETmT6F7kfROAV4gwglIkovnYNpvDAYPI4dZcMR55lK1pPgulm9T05SYL1LyHSVthcIbB9LQYeJYYwE1Vzs6AlNoXNgbDZDZw0J4HM0rYJgpaIgsJO4q78lhE41Ft29EhptzrEnxrss0aaAwGGnfhyLPBDjGT06v7KduK3Qt3N6GwTyke97M3mrvZenQbUuNJWdu4UBgzglHYGRfvAgxyjMviX3PMbNnPFqXSrRhKa4TggVXc6XOowQcEJLcCdQ5D',
+      title: 'Thread Title'.repeat(256),
       body: 'abc',
       owner: 'abc',
     };
