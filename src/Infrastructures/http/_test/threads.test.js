@@ -58,7 +58,6 @@ describe('/threads endpoint', () => {
       const requestPayload = {
         title: 'Thread Title',
         body: 'Thread body',
-        owner: userId,
       };
       const server = await createServer(container);
 
@@ -78,7 +77,7 @@ describe('/threads endpoint', () => {
       expect(responseJson.status).toEqual('success');
       expect(responseJson.data.addedThread).toBeDefined();
       expect(responseJson.data.addedThread.title).toEqual(requestPayload.title);
-      expect(responseJson.data.addedThread.owner).toEqual(requestPayload.owner);
+      expect(responseJson.data.addedThread.owner).toEqual(userId);
     });
 
     it('should response 400 when request payload not contain needed properties', async () => {
@@ -110,7 +109,6 @@ describe('/threads endpoint', () => {
       const requestPayload = {
         title: 'Thread Title'.repeat(256),
         body: 'Thread body',
-        owner: userId,
       };
       const server = await createServer(container);
 

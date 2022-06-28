@@ -22,10 +22,10 @@ describe('ThreadRepositoryPostgres', () => {
   describe('addThread function', () => {
     it('should persist thread and return created thread correctly', async () => {
       // Arrange
-      const newThread = new NewThread({
+      const ownerId = 'user-123';
+      const newThread = new NewThread(ownerId, {
         title: 'Thread Title',
         body: 'Thread body',
-        owner: 'user-123',
       });
       const fakeIdGenerator = () => '123';
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
@@ -40,10 +40,10 @@ describe('ThreadRepositoryPostgres', () => {
 
     it('should return created thread correctly', async () => {
       // Arrange
-      const newThread = new NewThread({
+      const ownerId = 'user-123';
+      const newThread = new NewThread(ownerId, {
         title: 'Thread Title',
         body: 'Thread body',
-        owner: 'user-123',
       });
       const fakeIdGenerator = () => '123';
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);

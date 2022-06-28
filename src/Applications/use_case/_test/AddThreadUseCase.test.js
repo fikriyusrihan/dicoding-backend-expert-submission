@@ -6,10 +6,10 @@ const AddThreadUseCase = require('../AddThreadUseCase');
 describe('AddThreadUseCase', () => {
   it('should orchestrating the add thread action correctly', async () => {
     // Arrange
+    const ownerId = 'user-123';
     const useCasePayload = {
       title: 'Thread Title',
       body: 'Thread body',
-      owner: 'user-123',
     };
     const expectedCreatedThread = new CreatedThread({
       id: 'thread-123',
@@ -30,14 +30,13 @@ describe('AddThreadUseCase', () => {
     });
 
     // Action
-    const createdThread = await addThreadUseCase.execute(useCasePayload);
+    const createdThread = await addThreadUseCase.execute(ownerId, useCasePayload);
 
     // Assert
     expect(createdThread).toStrictEqual(expectedCreatedThread);
-    expect(mockThreadRepository.addThread).toBeCalledWith(new NewThread({
+    expect(mockThreadRepository.addThread).toBeCalledWith(new NewThread(ownerId, {
       title: useCasePayload.title,
       body: useCasePayload.body,
-      owner: useCasePayload.owner,
     }));
   });
 });
