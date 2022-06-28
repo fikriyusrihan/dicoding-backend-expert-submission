@@ -8,6 +8,7 @@ const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
+const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
 
 describe('ThreadRepositoryPostgres', () => {
   beforeAll(async () => {
@@ -127,6 +128,60 @@ describe('ThreadRepositoryPostgres', () => {
         content: 'Comment content',
         owner: 'user-234',
       }));
+    });
+  });
+
+  describe('verifyCommentExsists function', () => {
+    it('should throw NotFoundError when comment not found', async () => {
+      // Arrange
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(threadRepositoryPostgres.verifyCommentExists('comment-123')).rejects.toThrowError(NotFoundError);
+    });
+
+    it('should not throw Not Found Error when comment found', async () => {
+      // Arrange
+      await CommentsTableTestHelper.addComment({ id: 'comment-123', threadId: 'thread-234' });
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(threadRepositoryPostgres.verifyCommentExists('comment-123')).resolves.not.toThrowError(NotFoundError);
+    });
+  });
+
+  describe('verifyCommentOwner function', () => {
+    it('should throw AuthorizationError when the owner is invalid', async () => {
+      // Arrange
+      await CommentsTableTestHelper.addComment({ id: 'comment-123', threadId: 'thread-234', ownerId: 'user-123' });
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(threadRepositoryPostgres.verifyCommentOwner('comment-123', 'user-xxx')).rejects.toThrowError(AuthorizationError);
+    });
+
+    it('should not throw AuthorizationError when the owner is valid', async () => {
+      // Arrange
+      await CommentsTableTestHelper.addComment({ id: 'comment-123', threadId: 'thread-234', ownerId: 'user-123' });
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(threadRepositoryPostgres.verifyCommentOwner('comment-123', 'user-123')).resolves.not.toThrowError(AuthorizationError);
+    });
+  });
+
+  describe('deleteComment function', () => {
+    it('should delete comment', async () => {
+      // Arrange
+      await CommentsTableTestHelper.addComment({ id: 'comment-123', threadId: 'thread-234' });
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action
+      await threadRepositoryPostgres.deleteComment('comment-123');
+
+      // Assert
+      const result = await CommentsTableTestHelper.findCommentsById('comment-123');
+      expect(result[0].is_delete).toBe(true);
     });
   });
 });
