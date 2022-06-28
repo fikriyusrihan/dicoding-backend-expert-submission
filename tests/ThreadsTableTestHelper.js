@@ -3,7 +3,7 @@ const pool = require('../src/Infrastructures/database/postgres/pool');
 
 const ThreadsTableTestHelper = {
   async addThread({
-    id = 'thread-123', title = 'Thread Title', body = 'Thread Body', owner = 'owner-123',
+    id = 'thread-123', title = 'Thread Title', body = 'Thread Body', owner = 'user-123',
   }) {
     const createdAt = new Date().toISOString();
     const updatedAt = createdAt;

@@ -1,17 +1,26 @@
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const pool = require('../../database/postgres/pool');
 const NewThread = require('../../../Domains/threads/entities/NewThread');
+const NewComment = require('../../../Domains/threads/entities/NewComment');
 const CreatedThread = require('../../../Domains/threads/entities/CreatedThread');
+const CreatedComment = require('../../../Domains/threads/entities/CreatedComment');
 const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
+const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 
 describe('ThreadRepositoryPostgres', () => {
   beforeAll(async () => {
     await UsersTableTestHelper.addUser({});
+    await UsersTableTestHelper.addUser({ id: 'user-234', username: 'user-234' });
+  });
+
+  beforeEach(async () => {
+    await ThreadsTableTestHelper.addThread({ id: 'thread-234' });
   });
 
   afterEach(async () => {
     await ThreadsTableTestHelper.cleanTable();
+    await CommentsTableTestHelper.cleanTable();
   });
 
   afterAll(async () => {
@@ -56,6 +65,47 @@ describe('ThreadRepositoryPostgres', () => {
         id: 'thread-123',
         title: 'Thread Title',
         owner: 'user-123',
+      }));
+    });
+  });
+
+  describe('addComment function', () => {
+    it('should persist comment and return created comment correctly', async () => {
+      // Arrange
+      const ownerId = 'user-234';
+      const threadId = 'thread-234';
+      const newComment = new NewComment(ownerId, threadId, {
+        content: 'Comment content',
+      });
+      const fakeIdGenerator = () => '123';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+
+      // Action
+      await threadRepositoryPostgres.addComment(newComment);
+
+      // Assert
+      const comment = await CommentsTableTestHelper.findCommentsById('comment-123');
+      expect(comment).toHaveLength(1);
+    });
+
+    it('should return created comment correctly', async () => {
+      // Arrange
+      const ownerId = 'user-234';
+      const threadId = 'thread-234';
+      const newComment = new NewComment(ownerId, threadId, {
+        content: 'Comment content',
+      });
+      const fakeIdGenerator = () => '123';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+
+      // Action
+      const createdComment = await threadRepositoryPostgres.addComment(newComment);
+
+      // Assert
+      expect(createdComment).toStrictEqual(new CreatedComment({
+        id: 'comment-123',
+        content: 'Comment content',
+        owner: 'user-234',
       }));
     });
   });
