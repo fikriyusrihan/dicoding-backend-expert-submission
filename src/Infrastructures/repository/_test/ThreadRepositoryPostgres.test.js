@@ -2,13 +2,16 @@ const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper
 const pool = require('../../database/postgres/pool');
 const NewThread = require('../../../Domains/threads/entities/NewThread');
 const NewComment = require('../../../Domains/threads/entities/NewComment');
+const NewReply = require('../../../Domains/threads/entities/NewReply');
 const CreatedThread = require('../../../Domains/threads/entities/CreatedThread');
 const CreatedComment = require('../../../Domains/threads/entities/CreatedComment');
+const CreatedReply = require('../../../Domains/threads/entities/CreatedReply');
 const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
+const RepliesTableTestHelper = require('../../../../tests/RepliesTableTestHelper');
 
 describe('ThreadRepositoryPostgres', () => {
   beforeAll(async () => {
@@ -18,11 +21,13 @@ describe('ThreadRepositoryPostgres', () => {
 
   beforeEach(async () => {
     await ThreadsTableTestHelper.addThread({ id: 'thread-234' });
+    await CommentsTableTestHelper.addComment({ id: 'comment-forReply', threadId: 'thread-234' });
   });
 
   afterEach(async () => {
     await ThreadsTableTestHelper.cleanTable();
     await CommentsTableTestHelper.cleanTable();
+    await RepliesTableTestHelper.cleanTable();
   });
 
   afterAll(async () => {
@@ -203,6 +208,49 @@ describe('ThreadRepositoryPostgres', () => {
       // Assert
       const result = await CommentsTableTestHelper.findCommentsById('comment-123');
       expect(result[0].is_delete).toBe(true);
+    });
+  });
+
+  describe('addReply function', () => {
+    it('should persist reply and return created reply correctly', async () => {
+      // Arrange
+      const ownerId = 'user-234';
+      const threadId = 'thread-234';
+      const commentId = 'comment-forReply';
+      const newReply = new NewReply(ownerId, threadId, commentId, {
+        content: 'Reply content',
+      });
+      const fakeIdGenerator = () => '123';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+
+      // Action
+      await threadRepositoryPostgres.addReply(newReply);
+
+      // Assert
+      const comment = await RepliesTableTestHelper.findReplyById('reply-123');
+      expect(comment).toHaveLength(1);
+    });
+
+    it('should return created reply correctly', async () => {
+      // Arrange
+      const ownerId = 'user-234';
+      const threadId = 'thread-234';
+      const commentId = 'comment-forReply';
+      const newReply = new NewReply(ownerId, threadId, commentId, {
+        content: 'Reply content',
+      });
+      const fakeIdGenerator = () => '123';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+
+      // Action
+      const createdReply = await threadRepositoryPostgres.addReply(newReply);
+
+      // Assert
+      expect(createdReply).toStrictEqual(new CreatedReply({
+        id: 'reply-123',
+        content: 'Reply content',
+        owner: 'user-234',
+      }));
     });
   });
 });

@@ -5,6 +5,7 @@ const Thread = require('../../Domains/threads/entities/Thread');
 const ThreadRepository = require('../../Domains/threads/ThreadRepository');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../Commons/exceptions/AuthorizationError');
+const CreatedReply = require('../../Domains/threads/entities/CreatedReply');
 
 class ThreadRepositoryPostgres extends ThreadRepository {
   constructor(pool, idGenerator) {
@@ -130,6 +131,23 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     };
 
     await this._pool.query(query);
+  }
+
+  async addReply(newReply) {
+    const { content, commentId, ownerId } = newReply;
+    const id = `reply-${this._idGenerator()}`;
+    const createdAt = new Date().toISOString();
+    const updatedAt = createdAt;
+    const isDelete = false;
+
+    const query = {
+      text: 'INSERT INTO replies VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id, content, owner',
+      values: [id, content, createdAt, updatedAt, isDelete, ownerId, commentId],
+    };
+
+    const result = await this._pool.query(query);
+
+    return new CreatedReply({ ...result.rows[0] });
   }
 }
 
