@@ -305,4 +305,48 @@ describe('/threads endpoint', () => {
       expect(responseJson.message.length).not.toEqual(0);
     });
   });
+
+  describe('when GET /threads/{threadId}', () => {
+    it('should response 200 with status success', async () => {
+      // Arrange
+      const threadId = 'thread-123';
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId });
+      const server = await createServer(container);
+
+      // Action
+      const response = await server.inject({
+        method: 'GET',
+        url: `/threads/${threadId}`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+      expect(responseJson.data).toBeDefined();
+    });
+
+    it('should response 404 when thread not found', async () => {
+      // Arrange
+      const server = await createServer(container);
+
+      // Action
+      const response = await server.inject({
+        method: 'GET',
+        url: '/threads/xxx',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message.length).not.toEqual(0);
+    });
+  });
 });

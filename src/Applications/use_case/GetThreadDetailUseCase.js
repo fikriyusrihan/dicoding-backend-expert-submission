@@ -5,7 +5,7 @@ class GetThreadDetailUseCase {
 
   async execute(threadId) {
     await this._threadRepository.verifyThreadExists(threadId);
-    return this._threadRepository.getThreadDetails(threadId);
+    return this._threadRepository.getThreadDetail(threadId);
   }
 }
 
