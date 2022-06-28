@@ -76,6 +76,7 @@ describe('/threads endpoint', () => {
       expect(response.statusCode).toEqual(201);
       expect(responseJson.status).toEqual('success');
       expect(responseJson.data.addedThread).toBeDefined();
+      expect(responseJson.data.addedThread.id).toBeDefined();
       expect(responseJson.data.addedThread.title).toEqual(requestPayload.title);
       expect(responseJson.data.addedThread.owner).toEqual(userId);
     });
@@ -127,6 +128,87 @@ describe('/threads endpoint', () => {
       expect(response.statusCode).toEqual(400);
       expect(responseJson.status).toEqual('fail');
       expect(responseJson.message).toEqual('tidak dapat membuat thread baru karena judul thread melebihi batas limit');
+    });
+  });
+
+  describe('when POST /threads/{threadId}/comments', () => {
+    it('should response 201 and persisted comment', async () => {
+      // Arrange
+      const threadId = 'thread-123';
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId });
+      const requestPayload = {
+        content: 'Comment body',
+      };
+      const server = await createServer(container);
+
+      // Action
+      const response = await server.inject({
+        method: 'POST',
+        url: `/threads/${threadId}/comments`,
+        payload: requestPayload,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(201);
+      expect(responseJson.status).toEqual('success');
+      expect(responseJson.data.addedComment).toBeDefined();
+      expect(responseJson.data.addedComment.id).toBeDefined();
+      expect(responseJson.data.addedComment.content).toEqual(requestPayload.content);
+      expect(responseJson.data.addedComment.owner).toEqual(userId);
+    });
+
+    it('should response 404 when thread not found', async () => {
+      // Arrange
+      const requestPayload = {
+        content: 'Comment body',
+      };
+      const server = await createServer(container);
+
+      // Action
+      const response = await server.inject({
+        method: 'POST',
+        url: '/threads/xxx/comments',
+        payload: requestPayload,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message.length).not.toEqual(0);
+    });
+
+    it('should response 400 when request payload not contain needed properties', async () => {
+      // Arrange
+      const threadId = 'thread-123';
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId });
+      const requestPayload = {
+        body: 'Comment body',
+      };
+      const server = await createServer(container);
+
+      // Action
+      const response = await server.inject({
+        method: 'POST',
+        url: `/threads/${threadId}/comments`,
+        payload: requestPayload,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(400);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message.length).not.toEqual(0);
     });
   });
 });
