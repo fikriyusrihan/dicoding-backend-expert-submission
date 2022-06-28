@@ -149,6 +149,41 @@ class ThreadRepositoryPostgres extends ThreadRepository {
 
     return new CreatedReply({ ...result.rows[0] });
   }
+
+  async verifyReplyExists(replyId) {
+    const query = {
+      text: 'SELECT id FROM replies WHERE id = $1',
+      values: [replyId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('reply tidak ditemukan');
+    }
+  }
+
+  async verifyReplyOwner(replyId, ownerId) {
+    const query = {
+      text: 'SELECT owner FROM replies WHERE id = $1',
+      values: [replyId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (result.rows[0].owner !== ownerId) {
+      throw new AuthorizationError('Anda tidak memiliki hak untuk menghapus reply');
+    }
+  }
+
+  async deleteReply(replyId) {
+    const query = {
+      text: 'UPDATE replies SET is_delete = true WHERE id = $1',
+      values: [replyId],
+    };
+
+    await this._pool.query(query);
+  }
 }
 
 module.exports = ThreadRepositoryPostgres;
