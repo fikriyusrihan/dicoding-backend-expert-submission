@@ -71,7 +71,7 @@ describe('ThreadRepositoryPostgres', () => {
     });
   });
 
-  describe('getThreadDetails function', () => {
+  describe('getThreadDetail function', () => {
     it('should return thread details correctly', async () => {
       // Arrange
       await CommentsTableTestHelper.addComment({ id: 'comment-234', threadId: 'thread-234' });
@@ -79,7 +79,7 @@ describe('ThreadRepositoryPostgres', () => {
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool);
 
       // Action
-      const threadDetails = await threadRepositoryPostgres.getThreadDetails('thread-234');
+      const threadDetails = await threadRepositoryPostgres.getThreadDetail('thread-234');
 
       // Assert
       expect(threadDetails).toBeDefined();

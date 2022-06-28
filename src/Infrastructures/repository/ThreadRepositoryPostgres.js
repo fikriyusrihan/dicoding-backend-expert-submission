@@ -29,13 +29,14 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     return new CreatedThread({ ...result.rows[0] });
   }
 
-  async getThreadDetails(threadId) {
+  async getThreadDetail(threadId) {
     const queryComments = {
       text: `SELECT c.id, u.username, c.created_at, c.content, c.is_delete
       FROM comments c
       INNER JOIN users u
       ON c.owner = u.id
-      WHERE c.thread = $1`,
+      WHERE c.thread = $1
+      ORDER BY c.created_at ASC`,
       values: [threadId],
     };
 
