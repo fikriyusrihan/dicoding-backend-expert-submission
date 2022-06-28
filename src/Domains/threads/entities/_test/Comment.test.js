@@ -20,6 +20,7 @@ describe('A Comment', () => {
       username: 'developer',
       date: '2020-01-01',
       content: 'Comment content',
+      replies: [],
     };
 
     // Action & Assert
@@ -33,6 +34,7 @@ describe('A Comment', () => {
       username: 'developer',
       date: '2020-01-01',
       content: 'Comment content',
+      replies: [],
     };
 
     // Action
@@ -41,6 +43,7 @@ describe('A Comment', () => {
       username,
       date,
       content,
+      replies,
     } = new Comment(payload);
 
     // Assert
@@ -48,5 +51,6 @@ describe('A Comment', () => {
     expect(username).toEqual(payload.username);
     expect(date).toEqual(payload.date);
     expect(content).toEqual(payload.content);
+    expect(replies).toEqual(payload.replies);
   });
 });

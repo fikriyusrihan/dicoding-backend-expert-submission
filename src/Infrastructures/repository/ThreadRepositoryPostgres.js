@@ -6,6 +6,7 @@ const ThreadRepository = require('../../Domains/threads/ThreadRepository');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../Commons/exceptions/AuthorizationError');
 const CreatedReply = require('../../Domains/threads/entities/CreatedReply');
+const Reply = require('../../Domains/threads/entities/Reply');
 
 class ThreadRepositoryPostgres extends ThreadRepository {
   constructor(pool, idGenerator) {
@@ -51,14 +52,28 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     };
 
     const commentsResult = await this._pool.query(queryComments);
-    const comments = commentsResult.rows.map((comment) => {
+    const comments = await Promise.all(commentsResult.rows.map(async (comment) => {
       const content = comment.is_delete ? '**komentar telah dihapus**' : comment.content;
-      return new Comment({
-        ...comment,
-        content,
-        date: comment.created_at,
+
+      const queryReplies = {
+        text: `SELECT r.id, u.username, r.created_at, r.content, r.is_delete
+        FROM replies r
+        INNER JOIN users u
+        ON r.owner = u.id
+        WHERE r.comment = $1
+        ORDER BY r.created_at ASC`,
+        values: [comment.id],
+      };
+      const repliesResult = await this._pool.query(queryReplies);
+      const replies = repliesResult.rows.map((reply) => {
+        const replyContent = reply.is_delete ? '**balasan telah dihapus**' : reply.content;
+        return new Reply({ ...reply, content: replyContent, date: reply.created_at });
       });
-    });
+
+      return new Comment({
+        ...comment, content, date: comment.created_at, replies,
+      });
+    }));
 
     const threadResult = await this._pool.query(queryThread);
     return new Thread({

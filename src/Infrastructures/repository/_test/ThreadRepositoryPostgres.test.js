@@ -81,6 +81,8 @@ describe('ThreadRepositoryPostgres', () => {
       // Arrange
       await CommentsTableTestHelper.addComment({ id: 'comment-234', threadId: 'thread-234' });
       await CommentsTableTestHelper.addComment({ id: 'comment-345', threadId: 'thread-234', isDelete: true });
+      await RepliesTableTestHelper.addReply({ id: 'reply-234', commentId: 'comment-234' });
+      await RepliesTableTestHelper.addReply({ id: 'reply-345', commentId: 'comment-234', isDelete: true });
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool);
 
       // Action

@@ -6,16 +6,17 @@ class Comment {
     this.username = payload.username;
     this.date = payload.date;
     this.content = payload.content;
+    this.replies = payload.replies;
   }
 
   _verifyPayload({
-    id, username, date, content,
+    id, username, date, content, replies,
   }) {
-    if (!id || !username || !date || !content) {
+    if (!id || !username || !date || !content || !Array.isArray(replies)) {
       throw new Error('COMMENT.NOT_CONTAIN_NEEDED_PROPERTY');
     }
 
-    if (typeof id !== 'string' || typeof username !== 'string' || typeof date !== 'string' || typeof content !== 'string') {
+    if (typeof id !== 'string' || typeof username !== 'string' || typeof date !== 'string' || typeof content !== 'string' || !Array.isArray(replies)) {
       throw new Error('COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
     }
   }
