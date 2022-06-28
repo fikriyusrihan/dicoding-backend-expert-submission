@@ -1,5 +1,7 @@
 const CreatedThread = require('../../Domains/threads/entities/CreatedThread');
 const CreatedComment = require('../../Domains/threads/entities/CreatedComment');
+const Comment = require('../../Domains/threads/entities/Comment');
+const Thread = require('../../Domains/threads/entities/Thread');
 const ThreadRepository = require('../../Domains/threads/ThreadRepository');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../Commons/exceptions/AuthorizationError');
@@ -25,6 +27,43 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     const result = await this._pool.query(query);
 
     return new CreatedThread({ ...result.rows[0] });
+  }
+
+  async getThreadDetails(threadId) {
+    const queryComments = {
+      text: `SELECT c.id, u.username, c.created_at, c.content, c.is_delete
+      FROM comments c
+      INNER JOIN users u
+      ON c.owner = u.id
+      WHERE c.thread = $1`,
+      values: [threadId],
+    };
+
+    const queryThread = {
+      text: `SELECT t.id, title, body, created_at, username
+      FROM threads t
+      INNER JOIN users u
+      ON t.owner = u.id
+      WHERE t.id = $1`,
+      values: [threadId],
+    };
+
+    const commentsResult = await this._pool.query(queryComments);
+    const comments = commentsResult.rows.map((comment) => {
+      const content = comment.is_delete ? '**komentar telah dihapus**' : comment.content;
+      return new Comment({
+        ...comment,
+        content,
+        date: comment.created_at,
+      });
+    });
+
+    const threadResult = await this._pool.query(queryThread);
+    return new Thread({
+      ...threadResult.rows[0],
+      date: threadResult.rows[0].created_at,
+      comments,
+    });
   }
 
   async verifyThreadExists(threadId) {

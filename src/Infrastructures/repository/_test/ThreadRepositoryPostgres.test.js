@@ -71,6 +71,27 @@ describe('ThreadRepositoryPostgres', () => {
     });
   });
 
+  describe('getThreadDetails function', () => {
+    it('should return thread details correctly', async () => {
+      // Arrange
+      await CommentsTableTestHelper.addComment({ id: 'comment-234', threadId: 'thread-234' });
+      await CommentsTableTestHelper.addComment({ id: 'comment-345', threadId: 'thread-234', isDelete: true });
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool);
+
+      // Action
+      const threadDetails = await threadRepositoryPostgres.getThreadDetails('thread-234');
+
+      // Assert
+      expect(threadDetails).toBeDefined();
+      expect(threadDetails.id).toBeDefined();
+      expect(threadDetails.title).toBeDefined();
+      expect(threadDetails.body).toBeDefined();
+      expect(threadDetails.date).toBeDefined();
+      expect(threadDetails.username).toBeDefined();
+      expect(threadDetails.comments).toBeDefined();
+    });
+  });
+
   describe('verifyThreadExists function', () => {
     it('should throw NotFoundError when thread not found', async () => {
       // Arrange
