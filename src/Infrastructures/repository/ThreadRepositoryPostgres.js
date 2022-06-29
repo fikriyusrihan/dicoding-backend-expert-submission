@@ -96,18 +96,6 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     }
   }
 
-  async getCommentById(commentId) {
-    this.verifyCommentExists(commentId);
-
-    const query = {
-      text: 'SELECT * FROM comments WHERE id = $1',
-      values: [commentId],
-    };
-
-    const result = await this._pool.query(query);
-    return result.rows[0];
-  }
-
   async getCommentsByThreadId(threadId) {
     this.verifyThreadExists(threadId);
 
@@ -170,18 +158,6 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     if (result.rows[0].owner !== ownerId) {
       throw new AuthorizationError('Anda tidak memiliki hak untuk menghapus reply');
     }
-  }
-
-  async getReplyById(replyId) {
-    this.verifyReplyExists(replyId);
-
-    const query = {
-      text: 'SELECT * FROM replies WHERE id = $1',
-      values: [replyId],
-    };
-
-    const result = await this._pool.query(query);
-    return result.rows[0];
   }
 
   async getRepliesByCommentId(commentId) {

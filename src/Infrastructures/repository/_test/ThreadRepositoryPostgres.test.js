@@ -196,28 +196,6 @@ describe('ThreadRepositoryPostgres', () => {
     });
   });
 
-  describe('getCommentById function', () => {
-    it('should return comment payload correctly', async () => {
-      // Arrange
-      const commentId = 'comment-getCommentById';
-      await CommentsTableTestHelper.addComment({ id: commentId, threadId: 'thread-234' });
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool);
-
-      // Action
-      const comment = await threadRepositoryPostgres.getCommentById(commentId);
-
-      // Assert
-      expect(comment).toBeDefined();
-      expect(comment.id).toEqual(commentId);
-      expect(comment.content).toBeDefined();
-      expect(comment.created_at).toBeDefined();
-      expect(comment.updated_at).toBeDefined();
-      expect(comment.is_delete).toBeDefined();
-      expect(comment.owner).toBeDefined();
-      expect(comment.thread).toBeDefined();
-    });
-  });
-
   describe('getCommentsByThreadId function', () => {
     it('should return comments payload correctly', async () => {
       // Arrange
@@ -294,28 +272,6 @@ describe('ThreadRepositoryPostgres', () => {
         content: 'Reply content',
         owner: 'user-234',
       }));
-    });
-  });
-
-  describe('getReplyById function', () => {
-    it('should return reply payload correctly', async () => {
-      // Arrange
-      const replyId = 'reply-getReplyById';
-      await RepliesTableTestHelper.addReply({ id: replyId, commentId: 'comment-forReply' });
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool);
-
-      // Action
-      const reply = await threadRepositoryPostgres.getReplyById(replyId);
-
-      // Assert
-      expect(reply).toBeDefined();
-      expect(reply.id).toEqual(replyId);
-      expect(reply.content).toBeDefined();
-      expect(reply.created_at).toBeDefined();
-      expect(reply.updated_at).toBeDefined();
-      expect(reply.is_delete).toBeDefined();
-      expect(reply.owner).toBeDefined();
-      expect(reply.comment).toBeDefined();
     });
   });
 

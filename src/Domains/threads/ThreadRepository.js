@@ -23,10 +23,6 @@ class ThreadRepository {
     throw new Error('THREAD_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   }
 
-  async getCommentById(commentId) {
-    throw new Error('THREAD_REPOSITORY.METHOD_NOT_IMPLEMENTED');
-  }
-
   async getCommentsByThreadId(threadId) {
     throw new Error('THREAD_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   }
@@ -44,10 +40,6 @@ class ThreadRepository {
   }
 
   async verifyReplyOwner(replyId, ownerId) {
-    throw new Error('THREAD_REPOSITORY.METHOD_NOT_IMPLEMENTED');
-  }
-
-  async getReplyById(replyId) {
     throw new Error('THREAD_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   }
 

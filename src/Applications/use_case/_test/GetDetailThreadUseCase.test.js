@@ -11,6 +11,8 @@ describe('GetThreadDetailUseCase', () => {
     const threadId = 'thread-123';
     const mockThreadRepository = new ThreadRepository();
     const mockUserRepository = new UserRepository();
+
+    /** dummies */
     const threadPayload = {
       id: threadId,
       title: 'Thread Title',
@@ -30,8 +32,28 @@ describe('GetThreadDetailUseCase', () => {
       thread: threadId,
     };
 
+    const commentPayloadDeleted = {
+      id: 'comment-234',
+      content: 'Comment Content',
+      created_at: '2020-01-01',
+      updated_at: '2020-01-01',
+      is_delete: true,
+      owner: 'user-123',
+      thread: threadId,
+    };
+
     const replyPayload = {
       id: 'reply-123',
+      content: 'Reply Content',
+      created_at: '2020-01-01',
+      updated_at: '2020-01-01',
+      is_delete: false,
+      owner: 'user-123',
+      comment: commentPayload.id,
+    };
+
+    const replyPayloadDeleted = {
+      id: 'reply-234',
       content: 'Reply Content',
       created_at: '2020-01-01',
       updated_at: '2020-01-01',
@@ -56,6 +78,32 @@ describe('GetThreadDetailUseCase', () => {
             replies: [
               new Reply({
                 id: 'reply-123',
+                content: 'Reply Content',
+                date: '2020-01-01',
+                username: 'dicoding',
+              }),
+              new Reply({
+                id: 'reply-234',
+                content: '**balasan telah dihapus**',
+                date: '2020-01-01',
+                username: 'dicoding',
+              }),
+            ],
+          }),
+          new Comment({
+            id: 'comment-234',
+            username: 'dicoding',
+            date: '2020-01-01',
+            content: '**komentar telah dihapus**',
+            replies: [
+              new Reply({
+                id: 'reply-123',
+                content: 'Reply Content',
+                date: '2020-01-01',
+                username: 'dicoding',
+              }),
+              new Reply({
+                id: 'reply-234',
                 content: '**balasan telah dihapus**',
                 date: '2020-01-01',
                 username: 'dicoding',
@@ -74,9 +122,9 @@ describe('GetThreadDetailUseCase', () => {
     mockUserRepository.getUsernameById = jest.fn()
       .mockImplementation(() => Promise.resolve('dicoding'));
     mockThreadRepository.getCommentsByThreadId = jest.fn()
-      .mockImplementation(() => Promise.resolve([commentPayload]));
+      .mockImplementation(() => Promise.resolve([commentPayload, commentPayloadDeleted]));
     mockThreadRepository.getRepliesByCommentId = jest.fn()
-      .mockImplementation(() => Promise.resolve([replyPayload]));
+      .mockImplementation(() => Promise.resolve([replyPayload, replyPayloadDeleted]));
 
     /** create use case implementation */
     const getThreadDetailUseCase = new GetThreadDetailUseCase({
