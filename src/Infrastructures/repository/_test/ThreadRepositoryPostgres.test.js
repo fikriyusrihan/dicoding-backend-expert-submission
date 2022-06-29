@@ -76,26 +76,24 @@ describe('ThreadRepositoryPostgres', () => {
     });
   });
 
-  describe('getThreadDetail function', () => {
-    it('should return thread details correctly', async () => {
+  describe('getThreadById function', () => {
+    it('should return thread payload correctly', async () => {
       // Arrange
-      await CommentsTableTestHelper.addComment({ id: 'comment-234', threadId: 'thread-234' });
-      await CommentsTableTestHelper.addComment({ id: 'comment-345', threadId: 'thread-234', isDelete: true });
-      await RepliesTableTestHelper.addReply({ id: 'reply-234', commentId: 'comment-234' });
-      await RepliesTableTestHelper.addReply({ id: 'reply-345', commentId: 'comment-234', isDelete: true });
+      const threadId = 'thread-getThreadById';
+      await ThreadsTableTestHelper.addThread({ id: threadId });
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool);
 
       // Action
-      const threadDetails = await threadRepositoryPostgres.getThreadDetail('thread-234');
+      const thread = await threadRepositoryPostgres.getThreadById(threadId);
 
       // Assert
-      expect(threadDetails).toBeDefined();
-      expect(threadDetails.id).toBeDefined();
-      expect(threadDetails.title).toBeDefined();
-      expect(threadDetails.body).toBeDefined();
-      expect(threadDetails.date).toBeDefined();
-      expect(threadDetails.username).toBeDefined();
-      expect(threadDetails.comments).toBeDefined();
+      expect(thread).toBeDefined();
+      expect(thread.id).toEqual(threadId);
+      expect(thread.title).toBeDefined();
+      expect(thread.body).toBeDefined();
+      expect(thread.created_at).toBeDefined();
+      expect(thread.updated_at).toBeDefined();
+      expect(thread.owner).toBeDefined();
     });
   });
 
@@ -198,6 +196,49 @@ describe('ThreadRepositoryPostgres', () => {
     });
   });
 
+  describe('getCommentById function', () => {
+    it('should return comment payload correctly', async () => {
+      // Arrange
+      const commentId = 'comment-getCommentById';
+      await CommentsTableTestHelper.addComment({ id: commentId, threadId: 'thread-234' });
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool);
+
+      // Action
+      const comment = await threadRepositoryPostgres.getCommentById(commentId);
+
+      // Assert
+      expect(comment).toBeDefined();
+      expect(comment.id).toEqual(commentId);
+      expect(comment.content).toBeDefined();
+      expect(comment.created_at).toBeDefined();
+      expect(comment.updated_at).toBeDefined();
+      expect(comment.is_delete).toBeDefined();
+      expect(comment.owner).toBeDefined();
+      expect(comment.thread).toBeDefined();
+    });
+  });
+
+  describe('getCommentsByThreadId function', () => {
+    it('should return comments payload correctly', async () => {
+      // Arrange
+      const threadId = 'thread-getCommentsByThreadId';
+      await ThreadsTableTestHelper.addThread({ id: threadId });
+      await CommentsTableTestHelper.addComment({ id: 'comment-1', threadId, ownerId: 'user-1' });
+      await CommentsTableTestHelper.addComment({ id: 'comment-2', threadId, ownerId: 'user-2' });
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool);
+
+      // Action
+      const comments = await threadRepositoryPostgres.getCommentsByThreadId(threadId);
+
+      // Assert
+      expect(comments).toHaveLength(2);
+      expect(comments[0].id).toEqual('comment-1');
+      expect(comments[0].thread).toEqual(threadId);
+      expect(comments[1].id).toEqual('comment-2');
+      expect(comments[1].thread).toEqual(threadId);
+    });
+  });
+
   describe('deleteComment function', () => {
     it('should delete comment', async () => {
       // Arrange
@@ -253,6 +294,60 @@ describe('ThreadRepositoryPostgres', () => {
         content: 'Reply content',
         owner: 'user-234',
       }));
+    });
+  });
+
+  describe('getReplyById function', () => {
+    it('should return reply payload correctly', async () => {
+      // Arrange
+      const replyId = 'reply-getReplyById';
+      await RepliesTableTestHelper.addReply({ id: replyId, commentId: 'comment-forReply' });
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool);
+
+      // Action
+      const reply = await threadRepositoryPostgres.getReplyById(replyId);
+
+      // Assert
+      expect(reply).toBeDefined();
+      expect(reply.id).toEqual(replyId);
+      expect(reply.content).toBeDefined();
+      expect(reply.created_at).toBeDefined();
+      expect(reply.updated_at).toBeDefined();
+      expect(reply.is_delete).toBeDefined();
+      expect(reply.owner).toBeDefined();
+      expect(reply.comment).toBeDefined();
+    });
+  });
+
+  describe('getRepliesByCommentId function', () => {
+    it('should return replies payload correctly', async () => {
+      // Arrange
+      await RepliesTableTestHelper.addReply({ id: 'reply-123', commentId: 'comment-forReply' });
+      await RepliesTableTestHelper.addReply({ id: 'reply-234', commentId: 'comment-forReply' });
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool);
+
+      // Action
+      const replies = await threadRepositoryPostgres.getRepliesByCommentId('comment-forReply');
+
+      // Assert
+      expect(replies).toHaveLength(2);
+      expect(replies[0].id).toEqual('reply-123');
+      expect(replies[1].id).toEqual('reply-234');
+    });
+  });
+
+  describe('deleteReply function', () => {
+    it('should delete reply', async () => {
+      // Arrange
+      await RepliesTableTestHelper.addReply({ id: 'reply-123', commentId: 'comment-forReply' });
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool);
+
+      // Action
+      await threadRepositoryPostgres.deleteReply('reply-123');
+
+      // Assert
+      const result = await RepliesTableTestHelper.findReplyById('reply-123');
+      expect(result[0].is_delete).toBe(true);
     });
   });
 });

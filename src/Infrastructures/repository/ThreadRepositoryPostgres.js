@@ -1,12 +1,9 @@
 const CreatedThread = require('../../Domains/threads/entities/CreatedThread');
 const CreatedComment = require('../../Domains/threads/entities/CreatedComment');
-const Comment = require('../../Domains/threads/entities/Comment');
-const Thread = require('../../Domains/threads/entities/Thread');
 const ThreadRepository = require('../../Domains/threads/ThreadRepository');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../Commons/exceptions/AuthorizationError');
 const CreatedReply = require('../../Domains/threads/entities/CreatedReply');
-const Reply = require('../../Domains/threads/entities/Reply');
 
 class ThreadRepositoryPostgres extends ThreadRepository {
   constructor(pool, idGenerator) {
@@ -31,56 +28,16 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     return new CreatedThread({ ...result.rows[0] });
   }
 
-  async getThreadDetail(threadId) {
-    const queryComments = {
-      text: `SELECT c.id, u.username, c.created_at, c.content, c.is_delete
-      FROM comments c
-      INNER JOIN users u
-      ON c.owner = u.id
-      WHERE c.thread = $1
-      ORDER BY c.created_at ASC`,
+  async getThreadById(threadId) {
+    this.verifyThreadExists(threadId);
+
+    const query = {
+      text: 'SELECT * FROM threads WHERE id = $1',
       values: [threadId],
     };
 
-    const queryThread = {
-      text: `SELECT t.id, title, body, created_at, username
-      FROM threads t
-      INNER JOIN users u
-      ON t.owner = u.id
-      WHERE t.id = $1`,
-      values: [threadId],
-    };
-
-    const commentsResult = await this._pool.query(queryComments);
-    const comments = await Promise.all(commentsResult.rows.map(async (comment) => {
-      const content = comment.is_delete ? '**komentar telah dihapus**' : comment.content;
-
-      const queryReplies = {
-        text: `SELECT r.id, u.username, r.created_at, r.content, r.is_delete
-        FROM replies r
-        INNER JOIN users u
-        ON r.owner = u.id
-        WHERE r.comment = $1
-        ORDER BY r.created_at ASC`,
-        values: [comment.id],
-      };
-      const repliesResult = await this._pool.query(queryReplies);
-      const replies = repliesResult.rows.map((reply) => {
-        const replyContent = reply.is_delete ? '**balasan telah dihapus**' : reply.content;
-        return new Reply({ ...reply, content: replyContent, date: reply.created_at });
-      });
-
-      return new Comment({
-        ...comment, content, date: comment.created_at, replies,
-      });
-    }));
-
-    const threadResult = await this._pool.query(queryThread);
-    return new Thread({
-      ...threadResult.rows[0],
-      date: threadResult.rows[0].created_at,
-      comments,
-    });
+    const result = await this._pool.query(query);
+    return result.rows[0];
   }
 
   async verifyThreadExists(threadId) {
@@ -139,6 +96,30 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     }
   }
 
+  async getCommentById(commentId) {
+    this.verifyCommentExists(commentId);
+
+    const query = {
+      text: 'SELECT * FROM comments WHERE id = $1',
+      values: [commentId],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows[0];
+  }
+
+  async getCommentsByThreadId(threadId) {
+    this.verifyThreadExists(threadId);
+
+    const query = {
+      text: 'SELECT * FROM comments WHERE thread = $1 ORDER BY created_at ASC',
+      values: [threadId],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows;
+  }
+
   async deleteComment(commentId) {
     const query = {
       text: 'UPDATE comments SET is_delete = true WHERE id = $1',
@@ -189,6 +170,30 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     if (result.rows[0].owner !== ownerId) {
       throw new AuthorizationError('Anda tidak memiliki hak untuk menghapus reply');
     }
+  }
+
+  async getReplyById(replyId) {
+    this.verifyReplyExists(replyId);
+
+    const query = {
+      text: 'SELECT * FROM replies WHERE id = $1',
+      values: [replyId],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows[0];
+  }
+
+  async getRepliesByCommentId(commentId) {
+    this.verifyCommentExists(commentId);
+
+    const query = {
+      text: 'SELECT * FROM replies WHERE comment = $1 ORDER BY created_at ASC',
+      values: [commentId],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows;
   }
 
   async deleteReply(replyId) {

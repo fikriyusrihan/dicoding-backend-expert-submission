@@ -226,6 +226,10 @@ container.register([
           name: 'threadRepository',
           internal: ThreadRepository.name,
         },
+        {
+          name: 'userRepository',
+          internal: UserRepository.name,
+        },
       ],
     },
   },

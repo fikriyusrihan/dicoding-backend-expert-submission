@@ -320,9 +320,6 @@ describe('/threads endpoint', () => {
       const response = await server.inject({
         method: 'GET',
         url: `/threads/${threadId}`,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
       });
 
       // Assert
@@ -340,9 +337,6 @@ describe('/threads endpoint', () => {
       const response = await server.inject({
         method: 'GET',
         url: '/threads/xxx',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
       });
 
       // Assert
