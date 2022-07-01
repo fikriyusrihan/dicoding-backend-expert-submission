@@ -14,9 +14,9 @@ describe('/threads endpoint', () => {
   beforeAll(async () => {
     const server = await createServer(container);
     const registerUserPayload = {
-      username: 'dicoding',
-      password: 'secret',
-      fullname: 'Dicoding Indonesia',
+      username: 'developer',
+      password: 'secret-password',
+      fullname: 'Forum Developer',
     };
 
     const response = await server.inject({
@@ -35,8 +35,8 @@ describe('/threads endpoint', () => {
       method: 'POST',
       url: '/authentications',
       payload: {
-        username: 'dicoding',
-        password: 'secret',
+        username: 'developer',
+        password: 'secret-password',
       },
     });
 
@@ -59,10 +59,7 @@ describe('/threads endpoint', () => {
   describe('when POST /threads', () => {
     it('should response 201 and persisted thread', async () => {
       // Arrange
-      const requestPayload = {
-        title: 'Thread Title',
-        body: 'Thread body',
-      };
+      const requestPayload = { title: 'Thread Title', body: 'Thread body' };
       const server = await createServer(container);
 
       // Action
@@ -87,9 +84,7 @@ describe('/threads endpoint', () => {
 
     it('should response 400 when request payload not contain needed properties', async () => {
       // Arrange
-      const requestPayload = {
-        title: 'Thread Title',
-      };
+      const requestPayload = { title: 'Thread Title' };
       const server = await createServer(container);
 
       // Action
@@ -111,10 +106,7 @@ describe('/threads endpoint', () => {
 
     it('should response 400 when title more than 255 characters', async () => {
       // Arrange
-      const requestPayload = {
-        title: 'Thread Title'.repeat(256),
-        body: 'Thread body',
-      };
+      const requestPayload = { title: 'Thread Title'.repeat(256), body: 'Thread body' };
       const server = await createServer(container);
 
       // Action
