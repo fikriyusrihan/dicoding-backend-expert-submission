@@ -9,6 +9,8 @@ describe('AddReplyUseCase', () => {
   it('should orchestrating the add reply action correctly', async () => {
     // Arrange
     const ownerId = 'user-123';
+    const threadId = 'thread-123';
+    const commentId = 'comment-123';
     const useCasePayload = { content: 'reply' };
     const expectedCreatedReply = new CreatedReply({
       id: 'reply-123',
