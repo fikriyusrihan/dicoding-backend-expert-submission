@@ -1,7 +1,5 @@
-const AddCommentUseCase = require('../../../../Applications/use_case/AddCommentUseCase');
 const AddReplyUseCase = require('../../../../Applications/use_case/AddReplyUseCase');
 const AddThreadUseCase = require('../../../../Applications/use_case/AddThreadUseCase');
-const DeleteCommentUseCase = require('../../../../Applications/use_case/DeleteCommentUseCase');
 const DeleteReplyUseCase = require('../../../../Applications/use_case/DeleteReplyUseCase');
 const GetThreadDetailUseCase = require('../../../../Applications/use_case/GetThreadDetailUseCase');
 
@@ -10,8 +8,6 @@ class ThreadsHandler {
     this._container = container;
 
     this.postThreadHandler = this.postThreadHandler.bind(this);
-    this.postThreadCommentByIdHandler = this.postThreadCommentByIdHandler.bind(this);
-    this.deleteThreadCommentByIdHandler = this.deleteThreadCommentByIdHandler.bind(this);
     this.getThreadByIdHandler = this.getThreadByIdHandler.bind(this);
     this.postThreadCommentReplyByIdHandler = this.postThreadCommentReplyByIdHandler.bind(this);
     this.deleteThreadCommentReplyByIdHandler = this.deleteThreadCommentReplyByIdHandler.bind(this);
@@ -35,36 +31,6 @@ class ThreadsHandler {
     });
     response.code(201);
     return response;
-  }
-
-  async postThreadCommentByIdHandler(request, h) {
-    const addCommentUseCase = this._container.getInstance(AddCommentUseCase.name);
-
-    const ownerId = request.auth.credentials.id;
-    const { threadId } = request.params;
-    const payload = { content: request.payload.content };
-    const addedComment = await addCommentUseCase.execute(ownerId, threadId, payload);
-
-    const response = h.response({
-      status: 'success',
-      data: {
-        addedComment,
-      },
-    });
-    response.code(201);
-    return response;
-  }
-
-  async deleteThreadCommentByIdHandler(request, h) {
-    const deleteCommentUseCase = this._container.getInstance(DeleteCommentUseCase.name);
-
-    const ownerId = request.auth.credentials.id;
-    const { threadId, commentId } = request.params;
-
-    await deleteCommentUseCase.execute(threadId, commentId, ownerId);
-    return {
-      status: 'success',
-    };
   }
 
   async getThreadByIdHandler(request, h) {
