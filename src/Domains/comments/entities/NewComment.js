@@ -4,8 +4,8 @@ class NewComment {
     const { content } = payload;
 
     this.content = content;
-    this.threadId = threadId;
-    this.ownerId = ownerId;
+    this.thread = threadId;
+    this.owner = ownerId;
   }
 
   _verifyPayload({ content }) {

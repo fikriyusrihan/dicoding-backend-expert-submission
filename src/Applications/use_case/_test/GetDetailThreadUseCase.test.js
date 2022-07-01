@@ -2,14 +2,18 @@ const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const UserRepository = require('../../../Domains/users/UserRepository');
 const Thread = require('../../../Domains/threads/entities/Thread');
 const GetThreadDetailUseCase = require('../GetThreadDetailUseCase');
-const Comment = require('../../../Domains/threads/entities/Comment');
-const Reply = require('../../../Domains/threads/entities/Reply');
+const Comment = require('../../../Domains/comments/entities/Comment');
+const Reply = require('../../../Domains/replies/entities/Reply');
+const CommentRepository = require('../../../Domains/comments/CommentRepository');
+const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
 
 describe('GetThreadDetailUseCase', () => {
   it('should orchestrating the get thread detail action correctly', async () => {
     // Arrange
     const threadId = 'thread-123';
     const mockThreadRepository = new ThreadRepository();
+    const mockCommentRepository = new CommentRepository();
+    const mockReplyRepository = new ReplyRepository();
     const mockUserRepository = new UserRepository();
 
     /** dummies */
@@ -115,20 +119,19 @@ describe('GetThreadDetailUseCase', () => {
     );
 
     /** mocking implementation */
-    mockThreadRepository.verifyThreadExists = jest.fn()
-      .mockImplementation(() => Promise.resolve());
-    mockThreadRepository.getThreadById = jest.fn()
-      .mockImplementation(() => Promise.resolve(threadPayload));
-    mockUserRepository.getUsernameById = jest.fn()
-      .mockImplementation(() => Promise.resolve('dicoding'));
-    mockThreadRepository.getCommentsByThreadId = jest.fn()
-      .mockImplementation(() => Promise.resolve([commentPayload, commentPayloadDeleted]));
-    mockThreadRepository.getRepliesByCommentId = jest.fn()
-      .mockImplementation(() => Promise.resolve([replyPayload, replyPayloadDeleted]));
+    mockUserRepository.getUsernameById = jest.fn(() => Promise.resolve('dicoding'));
+    mockThreadRepository.verifyThreadExists = jest.fn(() => Promise.resolve());
+    mockThreadRepository.getThreadById = jest.fn(() => Promise.resolve(threadPayload));
+    mockReplyRepository.getRepliesByCommentId = jest
+      .fn(() => Promise.resolve([replyPayload, replyPayloadDeleted]));
+    mockCommentRepository.getCommentsByThreadId = jest
+      .fn(() => Promise.resolve([commentPayload, commentPayloadDeleted]));
 
     /** create use case implementation */
     const getThreadDetailUseCase = new GetThreadDetailUseCase({
       threadRepository: mockThreadRepository,
+      commentRepository: mockCommentRepository,
+      replyRepository: mockReplyRepository,
       userRepository: mockUserRepository,
     });
 
@@ -140,7 +143,7 @@ describe('GetThreadDetailUseCase', () => {
     expect(mockThreadRepository.verifyThreadExists).toBeCalledWith(threadId);
     expect(mockThreadRepository.getThreadById).toBeCalledWith(threadId);
     expect(mockUserRepository.getUsernameById).toBeCalledWith(threadPayload.owner);
-    expect(mockThreadRepository.getCommentsByThreadId).toBeCalledWith(threadId);
-    expect(mockThreadRepository.getRepliesByCommentId).toBeCalledWith(commentPayload.id);
+    expect(mockCommentRepository.getCommentsByThreadId).toBeCalledWith(threadId);
+    expect(mockReplyRepository.getRepliesByCommentId).toBeCalledWith(commentPayload.id);
   });
 });

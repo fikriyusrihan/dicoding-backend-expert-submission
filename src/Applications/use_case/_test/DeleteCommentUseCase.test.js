@@ -1,4 +1,5 @@
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
+const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const DeleteCommentUseCase = require('../DeleteCommentUseCase');
 
 describe('DeleteCommentUseCase', () => {
@@ -9,30 +10,25 @@ describe('DeleteCommentUseCase', () => {
     const ownerId = 'user-123';
 
     const mockThreadRepository = new ThreadRepository();
-    mockThreadRepository.verifyThreadExists = jest.fn()
-      .mockImplementation(() => Promise.resolve());
-    mockThreadRepository.verifyCommentExists = jest.fn()
-      .mockImplementation(() => Promise.resolve());
-    mockThreadRepository.verifyCommentOwner = jest.fn()
-      .mockImplementation(() => Promise.resolve());
-    mockThreadRepository.deleteComment = jest.fn()
-      .mockImplementation(() => Promise.resolve());
+    const mockCommentRepository = new CommentRepository();
+
+    mockThreadRepository.verifyThreadExists = jest.fn(() => Promise.resolve());
+    mockCommentRepository.verifyCommentExists = jest.fn(() => Promise.resolve());
+    mockCommentRepository.verifyCommentOwner = jest.fn(() => Promise.resolve());
+    mockCommentRepository.deleteComment = jest.fn(() => Promise.resolve());
 
     const deleteCommentUseCase = new DeleteCommentUseCase({
       threadRepository: mockThreadRepository,
+      commentRepository: mockCommentRepository,
     });
 
     // Action
     await deleteCommentUseCase.execute(threadId, commentId, ownerId);
 
     // Assert
-    expect(mockThreadRepository.verifyThreadExists)
-      .toHaveBeenCalledWith(threadId);
-    expect(mockThreadRepository.verifyCommentExists)
-      .toHaveBeenCalledWith(commentId);
-    expect(mockThreadRepository.verifyCommentOwner)
-      .toHaveBeenCalledWith(commentId, ownerId);
-    expect(mockThreadRepository.deleteComment)
-      .toHaveBeenCalledWith(commentId);
+    expect(mockThreadRepository.verifyThreadExists).toHaveBeenCalledWith(threadId);
+    expect(mockCommentRepository.verifyCommentExists).toHaveBeenCalledWith(commentId);
+    expect(mockCommentRepository.verifyCommentOwner).toHaveBeenCalledWith(commentId, ownerId);
+    expect(mockCommentRepository.deleteComment).toHaveBeenCalledWith(commentId);
   });
 });

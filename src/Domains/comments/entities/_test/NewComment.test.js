@@ -36,8 +36,8 @@ describe('A NewComment entities', () => {
     // Action
     const {
       content,
-      threadId: threadId_,
-      ownerId: ownerId_,
+      thread: threadId_,
+      owner: ownerId_,
     } = new NewComment(ownerId, threadId, payload);
 
     // Assert

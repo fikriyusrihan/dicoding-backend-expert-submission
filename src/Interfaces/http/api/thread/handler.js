@@ -42,9 +42,7 @@ class ThreadsHandler {
 
     const ownerId = request.auth.credentials.id;
     const { threadId } = request.params;
-    const payload = {
-      content: request.payload.content,
-    };
+    const payload = { content: request.payload.content };
     const addedComment = await addCommentUseCase.execute(ownerId, threadId, payload);
 
     const response = h.response({
