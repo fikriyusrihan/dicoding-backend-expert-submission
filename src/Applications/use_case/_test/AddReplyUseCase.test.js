@@ -9,11 +9,7 @@ describe('AddReplyUseCase', () => {
   it('should orchestrating the add reply action correctly', async () => {
     // Arrange
     const ownerId = 'user-123';
-    const threadId = 'thread-123';
-    const commentId = 'comment-123';
-    const useCasePayload = {
-      content: 'reply',
-    };
+    const useCasePayload = { content: 'reply' };
     const expectedCreatedReply = new CreatedReply({
       id: 'reply-123',
       content: useCasePayload.content,
@@ -26,12 +22,15 @@ describe('AddReplyUseCase', () => {
     const mockReplyRepository = new ReplyRepository();
 
     /** mocking needed function */
-    mockThreadRepository.verifyThreadExists = jest.fn()
-      .mockImplementation(() => Promise.resolve());
-    mockCommentRepository.verifyCommentExists = jest.fn()
-      .mockImplementation(() => Promise.resolve());
-    mockReplyRepository.addReply = jest.fn()
-      .mockImplementation(() => Promise.resolve(expectedCreatedReply));
+    mockThreadRepository.verifyThreadExists = jest.fn(() => Promise.resolve());
+    mockCommentRepository.verifyCommentExists = jest.fn(() => Promise.resolve());
+    mockReplyRepository.addReply = jest.fn(() => Promise.resolve(
+      new CreatedReply({
+        id: 'reply-123',
+        content: useCasePayload.content,
+        owner: ownerId,
+      }),
+    ));
 
     /** creating use case instance */
     const addReplyUseCase = new AddReplyUseCase({
